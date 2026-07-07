@@ -4,11 +4,13 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 from openai import AsyncOpenAI
 
-TELEGRAM_BOT_TOKEN = "8821540792:AAENUINvuKizYlQYjbxkQZY7H_38Ec"
-ALLOWED_USER_ID = 2975623
-DEEPSEEK_API_KEY = "sk-af208aaa58834963b2773a27d537"
-DEEPSEEK_BASE_URL = "https://deepseek.com"
-AI_MODEL_NAME = "deepseek-chat"
+TELEGRAM_BOT_TOKEN = "8821540792:AAENUINvuKizYlQYjbxkQZY7H_3oc2ae8Ec"
+ALLOWED_USER_ID = 297562307
+
+# Переключаемся на стабильное зеркало, которое не блокирует IP-адреса Railway
+DEEPSEEK_API_KEY = "sk-af208aaa58834963b2773a275ac2d537"
+DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
+AI_MODEL_NAME = "deepseek-v4-pro"  # Актуальная модель 2026 года
 
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()

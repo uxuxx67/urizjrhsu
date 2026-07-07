@@ -4,10 +4,10 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 from openai import AsyncOpenAI
 
-TELEGRAM_BOT_TOKEN = "8821540792:AAENUINvuKizYlQYjbxkQZY7H_e8Ec"
+TELEGRAM_BOT_TOKEN = "8821540792:AAENUINvuKizYlQYjbxkQZY7H_3oc2ae8Ec"
 ALLOWED_USER_ID = 297562307
 
-DEEPSEEK_API_KEY = "sk-af2084963b277275ac2d537"
+DEEPSEEK_API_KEY = "sk-af208aaa58834963b2773a275ac2d537"
 DEEPSEEK_BASE_URL = "https://deepseek.com"
 AI_MODEL_NAME = "deepseek-chat"
 

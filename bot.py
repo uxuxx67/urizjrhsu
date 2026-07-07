@@ -4,10 +4,10 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 from openai import AsyncOpenAI
 
-TELEGRAM_BOT_TOKEN = "8821540792:AAENUINvuKizYlQYjbxkQZY7H_3oc2ae8Ec"
-ALLOWED_USER_ID = 297562307
+TELEGRAM_BOT_TOKEN = "8821540792:AAENUINvuKiYlQYjxkQZY7H_3ocae8Ec"
+ALLOWED_USER_ID = 2756207
 
-GROQ_API_KEY = "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"
+GROQ_API_KEY = "gsk_0mCTtXZYVgM1wvjXxkyTGdyb3FYLKhoG52xu243T7PkTfd5FN"
 GROQ_BASE_URL = "https://groq.com"
 AI_MODEL_NAME = "llama-3.3-70b-versatile"
 

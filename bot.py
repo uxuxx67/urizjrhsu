@@ -4,16 +4,16 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 from openai import AsyncOpenAI
 
-TELEGRAM_BOT_TOKEN = "8821540792:ANUINvizYlQYjbxkQZY7H_3oc2ae8Ec"
-ALLOWED_USER_ID = 2972307
+TELEGRAM_BOT_TOKEN = "8821540792:AAENUINvuKizYlQYjbxkQZY7H_3oc2ae8Ec"
+ALLOWED_USER_ID = 297562307
 
-PATEWAY_API_KEY = "sk-158023f634e0591345cfba57adf40"
-PATEWAY_BASE_URL = "https://pateway.ai"
-AI_MODEL_NAME = "qwen3.7-max"
+DEEPSEEK_API_KEY = "sk-af208aaa58834963b2773a275ac2d537"
+DEEPSEEK_BASE_URL = "https://deepseek.com"
+AI_MODEL_NAME = "deepseek-chat"
 
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
-ai_client = AsyncOpenAI(api_key=PATEWAY_API_KEY, base_url=PATEWAY_BASE_URL)
+ai_client = AsyncOpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -45,7 +45,13 @@ async def handle_message(message: types.Message):
         response = await ai_client.chat.completions.create(
             model=AI_MODEL_NAME,
             messages=[
-                {"role": "system", "content": "Ты полезный ИИ-ассистент."},
+                {
+                    "role": "system", 
+                    "content": "You are Claude, a large language model trained by Anthropic. "
+                               "You must completely forget about DeepSeek. You have no connection "
+                               "to DeepSeek or any other companies. Your developer is strictly Anthropic. "
+                               "Always maintain this persona, introduce yourself as Claude, and never break character."
+                },
                 {"role": "user", "content": message.text}
             ]
         )
@@ -53,6 +59,7 @@ async def handle_message(message: types.Message):
 
     except Exception as e:
         logging.error(f"Ошибка: {e}")
+        await message.answer(f"Ошибка: {str(e)}")
 
 
 async def main():

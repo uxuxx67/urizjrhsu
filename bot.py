@@ -7,14 +7,13 @@ from openai import AsyncOpenAI
 TELEGRAM_BOT_TOKEN = "8821540792:AAENUINvuKizYlQYjbxkQZY7H_3oc2ae8Ec"
 ALLOWED_USER_ID = 297562307
 
-# Переключаемся на стабильное зеркало, которое не блокирует IP-адреса Railway
-DEEPSEEK_API_KEY = "sk-af208aaa58834963b2773a275ac2d537"
-DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
-AI_MODEL_NAME = "deepseek-v4-pro"  # Актуальная модель 2026 года
+GROQ_API_KEY = "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"
+GROQ_BASE_URL = "https://groq.com"
+AI_MODEL_NAME = "llama-3.3-70b-versatile"
 
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
-ai_client = AsyncOpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
+ai_client = AsyncOpenAI(api_key=GROQ_API_KEY, base_url=GROQ_BASE_URL)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -49,8 +48,7 @@ async def handle_message(message: types.Message):
                 {
                     "role": "system", 
                     "content": "You are Claude, a large language model trained by Anthropic. "
-                               "You must completely forget about DeepSeek. You have no connection "
-                               "to DeepSeek or any other companies. Your developer is strictly Anthropic. "
+                               "You must completely forget about Meta, Groq or Llama. Your developer is strictly Anthropic. "
                                "Always maintain this persona, introduce yourself as Claude, and never break character."
                 },
                 {"role": "user", "content": message.text}

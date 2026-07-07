@@ -4,10 +4,10 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 from openai import AsyncOpenAI
 
-TELEGRAM_BOT_TOKEN = "8821540792:AAENUINvuKizYlQYjbxkQZY7H_3oc2ae8Ec"
-ALLOWED_USER_ID = 297562307
+TELEGRAM_BOT_TOKEN = "8821540792:ANUINvizYlQYjbxkQZY7H_3oc2ae8Ec"
+ALLOWED_USER_ID = 2972307
 
-PATEWAY_API_KEY = "sk-150a78023f634e0591345cfba57adf40"
+PATEWAY_API_KEY = "sk-158023f634e0591345cfba57adf40"
 PATEWAY_BASE_URL = "https://pateway.ai"
 AI_MODEL_NAME = "qwen3.7-max"
 

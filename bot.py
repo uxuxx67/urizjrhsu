@@ -11,12 +11,13 @@ ANYMODEL_API_KEY = "sk-dc9d4b7df36ba555-xudaww-f83d999e"  # СМЕНИ!
 ANYMODEL_URL = "https://anymodel.org/v1/chat/completions"
 ADMIN_ID = 297562307
 
-# Новая модель: Gemini 3.1 Flash-Lite (самая свежая, дёшево и умнее 2.5 Flash)
-MODEL = "gemini-3.1-flash-lite-preview"
+# Claude Haiku 4.5 (быстрая, дешёвая, умная)
+MODEL = "claude-haiku-4-5-20251001"
 
-# Альтернативы (если эта не запустится):
-# MODEL = "gc/gemini-2.5-flash-lite"   # старая, но рабочая
-# MODEL = "gc/gemini-2.5-flash"        # средняя
+# Альтернативы:
+# MODEL = "claude-sonnet-4-5-20250929"  # умнее, но дороже
+# MODEL = "claude-opus-4-5-20251101"    # самая мощная Claude
+# MODEL = "gc/gemini-2.5-flash"         # если Claude не запустится
 
 # ---------- БОТ ----------
 bot = Bot(token=BOT_TOKEN)

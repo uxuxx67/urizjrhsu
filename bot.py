@@ -5,13 +5,13 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 
-# ---------- КОНФИГ (ЗАМЕНИ ТОЛЬКО ЭТИ ПЕРЕМЕННЫЕ) ----------
-BOT_TOKEN = "8644938642:AAFcN3sfkt4Ppc6p9i0cu7uIGRsGDcmow6E"      # токен от @BotFather
-ANYMODEL_API_KEY = "sk-dc9d4b7df36ba555-xudaww-f83d999e"         # СМЕНИ ПОТОМ!
+# ---------- КОНФИГ ----------
+BOT_TOKEN = "8644938642:AAFcN3sfkt4Ppc6p9i0cu7uIGRsGDcmow6E"
+ANYMODEL_API_KEY = "sk-dc9d4b7df36ba555-xudaww-f83d999e"  # ОБЯЗАТЕЛЬНО СМЕНИ ПОТОМ!
 ANYMODEL_URL = "https://anymodel.org/v1/chat/completions"
-ADMIN_ID = 297562307                                              # твой Telegram ID
+ADMIN_ID = 297562307
 
-# Проверенная рабочая модель (именно она в твоём curl)
+# Рабочая модель
 MODEL = "gc/gemini-2.5-flash-lite"
 
 # ---------- БОТ ----------
@@ -42,12 +42,13 @@ async def handle_message(message: types.Message):
             json={
                 "model": MODEL,
                 "messages": [{"role": "user", "content": message.text}],
-                "max_tokens": 2048
+                "max_tokens": 2048,
+                "stream": False   # ← ВОТ ЭТО ГЛАВНОЕ
             },
             timeout=60
         )
 
-        # Проверяем, что ответ — JSON
+        # Парсим JSON
         try:
             data = response.json()
         except json.JSONDecodeError:

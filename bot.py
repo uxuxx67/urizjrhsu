@@ -11,8 +11,8 @@ ANYMODEL_API_KEY = "sk-dc9d4b7df36ba555-xudaww-f83d999e"
 ANYMODEL_URL = "https://anymodel.org/v1/chat/completions"
 ADMIN_ID = 297562307
 
-# Новая модель Gemini 3 Flash (preview)
-MODEL = "gemini-3-flash-preview"
+# Claude Haiku 4.5 (с датой, как на сайте)
+MODEL = "claude-haiku-4-5-20251001"
 
 # ---------- БОТ ----------
 bot = Bot(token=BOT_TOKEN)

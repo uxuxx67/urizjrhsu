@@ -1,16 +1,19 @@
 import asyncio
 import requests
+import json
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 
 BOT_TOKEN = "8644938642:AAFcN3sfkt4Ppc6p9i0cu7uIGRsGDcmow6E"
-ANYMODEL_API_KEY = "sk-dc9d4b7df36ba555-xudaww-f83d999e"  # СМЕНИ ПОТОМ
+ANYMODEL_API_KEY = "sk-dc9d4b7df36ba555-xudaww-f83d999e"  # СМЕНИ!
 ANYMODEL_URL = "https://anymodel.org/v1/chat/completions"
 ADMIN_ID = 297562307
 
-# Проверенная рабочая модель
-MODEL = "gc/gemini-2.5-flash-lite"
+# Попробуй сначала эту модель (она точно доступна в AnyModel без доп. ключей)
+# Если заработает, потом поменяешь на gemini
+MODEL = "claude-3-5-haiku-20241022"
+# MODEL = "gc/gemini-2.5-flash-lite"  # раскомментируй, если захочешь Gemini
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
@@ -44,12 +47,28 @@ async def handle_message(message: types.Message):
             timeout=45
         )
 
+        # Проверяем, что ответ — JSON
+        try:
+            data = response.json()
+        except json.JSONDecodeError:
+            # Если не JSON, выводим сырой текст ответа (для диагностики)
+            await message.answer(
+                f"сервер вернул не json\nстатус: {response.status_code}\nтекст: {response.text[:500]}"
+            )
+            return
+
         if response.status_code == 200:
-            reply = response.json()["choices"][0]["message"]["content"]
+            reply = data["choices"][0]["message"]["content"]
             await message.answer(reply)
         else:
-            await message.answer(f"ошибка: {response.status_code} - {response.text[:200]}")
+            # Выводим ошибку из JSON
+            error_msg = data.get("error", {}).get("message", str(data))
+            await message.answer(f"ошибка api ({response.status_code}): {error_msg}")
 
+    except requests.exceptions.Timeout:
+        await message.answer("превышено время ожидания")
+    except requests.exceptions.ConnectionError:
+        await message.answer("не удалось соединиться с api")
     except Exception as e:
         await message.answer(f"ошибка: {str(e)}")
 

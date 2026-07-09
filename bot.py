@@ -7,16 +7,15 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 # ---------- КОНФИГ ----------
 BOT_TOKEN = "8644938642:AAFcN3sfkt4Ppc6p9i0cu7uIGRsGDcmow6E"
-ANYMODEL_API_KEY = "sk-dc9d4b7df36ba555-xudaww-f83d999e"  # СМЕНИТЕ ПОСЛЕ ПЕРВОГО ЗАПУСКА!
+ANYMODEL_API_KEY = "sk-dc9d4b7df36ba555-xudaww-f83d999e"  # ОБЯЗАТЕЛЬНО СМЕНИТЕ ПОСЛЕ ПЕРВОГО ЗАПУСКА!
 ANYMODEL_URL = "https://anymodel.org/v1/chat/completions"
 ADMIN_ID = 297562307  # только этот пользователь может пользоваться ботом
 
-# Доступные модели (название для кнопки → ID в AnyModel)
-# !!! Уточните точные ID моделей в личном кабинете anymodel.org !!!
+# Доступные модели (правильные идентификаторы для AnyModel)
 MODELS = {
-    "gemma 4 31b": "google/gemma-4-31b",
-    "gemini 2.5 flash": "google/gemini-2.5-flash",
-    "gemini 2.5 flash lite": "google/gemini-2.5-flash-lite",
+    "gemma 4 31b": "gc/gemma-4-31b",
+    "gemini 2.5 flash": "gc/gemini-2.5-flash",
+    "gemini 2.5 flash lite": "gc/gemini-2.5-flash-lite",
 }
 
 # ---------- БОТ ----------

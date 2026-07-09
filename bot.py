@@ -11,13 +11,12 @@ ANYMODEL_API_KEY = "sk-dc9d4b7df36ba555-xudaww-f83d999e"  # СМЕНИ!
 ANYMODEL_URL = "https://anymodel.org/v1/chat/completions"
 ADMIN_ID = 297562307
 
-# Идеальный баланс: умнее lite, дешевле pro
-MODEL = "gc/gemini-2.5-flash"
+# Новая модель: Gemini 3.1 Flash-Lite (самая свежая, дёшево и умнее 2.5 Flash)
+MODEL = "gemini-3.1-flash-lite-preview"
 
-# Альтернативы (если захочешь поменять):
-# MODEL = "gc/gemini-2.5-flash-lite"   # экономный, но туповат
-# MODEL = "gc/gemini-2.5-pro"          # мощный, но дорогой
-# MODEL = "gemini-3.1-flash-lite-preview"  # новинка, может глючить
+# Альтернативы (если эта не запустится):
+# MODEL = "gc/gemini-2.5-flash-lite"   # старая, но рабочая
+# MODEL = "gc/gemini-2.5-flash"        # средняя
 
 # ---------- БОТ ----------
 bot = Bot(token=BOT_TOKEN)

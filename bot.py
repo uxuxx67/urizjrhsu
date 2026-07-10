@@ -13,6 +13,7 @@ BOT_TOKEN = "8644938642:AAFcN3sfkt4Ppc6p9i0cu7uIGRsGDcmow6E"
 ANYMODEL_API_KEY = "sk-dc9d4b7df36ba555-xudaww-f83d999e"  # смени!
 ANYMODEL_URL = "https://anymodel.org/v1/chat/completions"
 ADMIN_ID = 297562307
+CHANNEL_ID = "@freechatgptcha"  # канал для подписки
 
 # модели (без gpt-5.3-codex)
 MODELS = {
@@ -104,17 +105,39 @@ def model_keyboard():
         buttons.append([InlineKeyboardButton(text=name, callback_data=f"model_{name}")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
+# ---------- проверка подписки ----------
+async def is_subscribed(user_id):
+    try:
+        member = await bot.get_chat_member(chat_id=CHANNEL_ID, user_id=user_id)
+        return member.status in ["member", "administrator", "creator"]
+    except:
+        return False
+
+def subscribe_keyboard():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="подписаться", url="https://t.me/freechatgptcha")],
+            [InlineKeyboardButton(text="готово", callback_data="check_sub")]
+        ]
+    )
+
 # ---------- обработчики ----------
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
     user_id = message.from_user.id
+    if not await is_subscribed(user_id):
+        await message.answer(
+            "hi subscribe to the channel to continue / привет, подпишись на канал чтобы продолжить",
+            reply_markup=subscribe_keyboard()
+        )
+        return
+    # подписан, регистрируем/показываем меню
     username = message.from_user.username or "пользователь"
     user = get_user(user_id)
     if not user:
         create_user(user_id, username)
         user = get_user(user_id)
     else:
-        # обновим имя
         if user["username"] != username:
             conn = sqlite3.connect("bot.db")
             c = conn.cursor()
@@ -124,6 +147,58 @@ async def start_cmd(message: types.Message):
     reset_if_needed(user_id)
     user_history[user_id] = []
     await show_menu(message)
+
+@dp.callback_query(F.data == "check_sub")
+async def check_subscription(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    if await is_subscribed(user_id):
+        # подписан, регистрируем, если ещё нет
+        username = callback.from_user.username or "пользователь"
+        user = get_user(user_id)
+        if not user:
+            create_user(user_id, username)
+            user = get_user(user_id)
+        else:
+            if user["username"] != username:
+                conn = sqlite3.connect("bot.db")
+                c = conn.cursor()
+                c.execute("UPDATE users SET username = ? WHERE user_id = ?", (username, user_id))
+                conn.commit()
+                conn.close()
+        reset_if_needed(user_id)
+        user_history[user_id] = []
+        # убираем кнопки, показываем меню
+        await callback.message.delete()
+        await show_menu(callback.message)  # отправляем новое меню
+        await callback.answer("подписка подтверждена")
+    else:
+        await callback.answer("вы ещё не подписались на канал", show_alert=True)
+
+@dp.callback_query(F.data.startswith("model_"))
+async def select_model(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    # проверяем подписку
+    if not await is_subscribed(user_id):
+        await callback.message.answer(
+            "hi subscribe to the channel to continue / привет, подпишись на канал чтобы продолжить",
+            reply_markup=subscribe_keyboard()
+        )
+        await callback.answer()
+        return
+    model_name = callback.data.split("model_", 1)[1]
+    model_id = MODELS.get(model_name)
+    if not model_id:
+        await callback.answer("неизвестная модель", show_alert=True)
+        return
+    user = get_user(user_id)
+    if not user:
+        create_user(user_id, callback.from_user.username)
+        user = get_user(user_id)
+    reset_if_needed(user_id)
+    set_model(user_id, model_id)
+    user_history[user_id] = []
+    await show_menu(callback.message, edit=True)
+    await callback.answer()
 
 async def show_menu(message: types.Message, edit=False):
     user_id = message.from_user.id
@@ -146,38 +221,25 @@ async def show_menu(message: types.Message, edit=False):
     else:
         await message.answer(text, reply_markup=model_keyboard())
 
-@dp.callback_query(F.data.startswith("model_"))
-async def select_model(callback: types.CallbackQuery):
-    user_id = callback.from_user.id
-    model_name = callback.data.split("model_", 1)[1]
-    model_id = MODELS.get(model_name)
-    if not model_id:
-        await callback.answer("неизвестная модель", show_alert=True)
-        return
-    # проверяем, зарегистрирован ли пользователь
-    user = get_user(user_id)
-    if not user:
-        # создаём автоматически при выборе модели
-        create_user(user_id, callback.from_user.username)
-        user = get_user(user_id)
-    reset_if_needed(user_id)
-    set_model(user_id, model_id)
-    user_history[user_id] = []
-    await callback.message.answer(f"сменена модель на: {model_name}")
-    await show_menu(callback.message, edit=True)
-    await callback.answer()
-
+# ---------- обработчики сообщений (текст, фото, документы) ----------
 @dp.message(F.text)
 async def handle_text(message: types.Message):
     user_id = message.from_user.id
-    # проверка регистрации
+    # проверка подписки
+    if not await is_subscribed(user_id):
+        await message.answer(
+            "hi subscribe to the channel to continue / привет, подпишись на канал чтобы продолжить",
+            reply_markup=subscribe_keyboard()
+        )
+        return
+
     user = get_user(user_id)
     if not user:
-        await message.answer("сначала /start")
+        await message.answer("чтобы модель сменилась, напишите /start")
         return
 
     reset_if_needed(user_id)
-    user = get_user(user_id)  # обновляем данные после сброса
+    user = get_user(user_id)
     balance = user["balance"]
     model = user["model"]
 
@@ -217,6 +279,30 @@ async def handle_text(message: types.Message):
             await message.answer(f"ошибка api ({resp.status_code}): {err}")
     except Exception as e:
         await message.answer(f"ошибка: {str(e)}")
+
+# Обработчики фото и документов (удалены, так как мы убрали поддержку, но они могут быть, если вдруг решим вернуть)
+# Оставляем их без кода, чтобы случайно не обработать
+@dp.message(F.photo)
+async def handle_photo(message: types.Message):
+    user_id = message.from_user.id
+    if not await is_subscribed(user_id):
+        await message.answer(
+            "hi subscribe to the channel to continue / привет, подпишись на канал чтобы продолжить",
+            reply_markup=subscribe_keyboard()
+        )
+        return
+    await message.answer("бот работает только с текстом")
+
+@dp.message(F.document)
+async def handle_document(message: types.Message):
+    user_id = message.from_user.id
+    if not await is_subscribed(user_id):
+        await message.answer(
+            "hi subscribe to the channel to continue / привет, подпишись на канал чтобы продолжить",
+            reply_markup=subscribe_keyboard()
+        )
+        return
+    await message.answer("бот работает только с текстом")
 
 async def main():
     init_db()

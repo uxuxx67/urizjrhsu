@@ -14,7 +14,7 @@ ANYMODEL_API_KEY = "sk-dc9d4b7df36ba555-xudaww-f83d999e"  # смени!
 ANYMODEL_URL = "https://anymodel.org/v1/chat/completions"
 ADMIN_ID = 297562307
 
-# модели (gpt-5.3-codex удалён)
+# модели (без gpt-5.3-codex)
 MODELS = {
     "gpt-5.6-sol": "gpt-5.6-sol",
     "gpt-5.6-luna": "gpt-5.6-luna",
@@ -105,12 +105,10 @@ def model_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def ensure_user(user_id, username=None):
-    """проверяет/создаёт пользователя, возвращает user dict"""
     user = get_user(user_id)
     if not user:
         create_user(user_id, username)
         user = get_user(user_id)
-    # обновим имя, если изменилось
     if username and user["username"] != username:
         conn = sqlite3.connect("bot.db")
         c = conn.cursor()
@@ -139,7 +137,6 @@ async def show_menu(message: types.Message, edit=False):
     user_id = message.from_user.id
     user = get_user(user_id)
     if not user:
-        # на всякий случай
         user = ensure_user(user_id, message.from_user.username)
     balance = user["balance"]
     model = user["model"]
@@ -164,11 +161,11 @@ async def select_model(callback: types.CallbackQuery):
     if not model_id:
         await callback.answer("неизвестная модель", show_alert=True)
         return
-    # пользователь уже должен быть, но на всякий случай
     ensure_user(user_id, callback.from_user.username)
     set_model(user_id, model_id)
-    # сбрасываем историю для нового диалога
-    user_history[user_id] = []
+    user_history[user_id] = []   # сбрасываем историю
+    # отправляем уведомление о смене модели
+    await callback.message.answer(f"сменена модель на: {model_name}")
     # обновляем меню
     await show_menu(callback.message, edit=True)
     await callback.answer()
@@ -177,8 +174,7 @@ async def select_model(callback: types.CallbackQuery):
 async def handle_text(message: types.Message):
     user_id = message.from_user.id
     username = message.from_user.username or "пользователь"
-    # автоматически регистрируем, если ещё нет
-    user = ensure_user(user_id, username)
+    user = ensure_user(user_id, username)  # авторегистрация
     balance = user["balance"]
     model = user["model"]
 
@@ -207,7 +203,6 @@ async def handle_text(message: types.Message):
             reply = data["choices"][0]["message"]["content"]
             if len(reply) > MAX_MSG_LEN:
                 await message.answer("сообщение слишком длинное, напишите другой вопрос,")
-                # не списываем токены
                 return
             update_balance(user_id, -COST)
             history.append({"role": "assistant", "content": reply})

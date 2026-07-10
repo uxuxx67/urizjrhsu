@@ -104,32 +104,24 @@ def model_keyboard():
         buttons.append([InlineKeyboardButton(text=name, callback_data=f"model_{name}")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-def ensure_user(user_id, username=None):
-    user = get_user(user_id)
-    if not user:
-        create_user(user_id, username)
-        user = get_user(user_id)
-    if username and user["username"] != username:
-        conn = sqlite3.connect("bot.db")
-        c = conn.cursor()
-        c.execute("UPDATE users SET username = ? WHERE user_id = ?", (username, user_id))
-        conn.commit()
-        conn.close()
-        user["username"] = username
-    reset_if_needed(user_id)
-    return get_user(user_id)
-
-def get_history(user_id):
-    if user_id not in user_history:
-        user_history[user_id] = []
-    return user_history[user_id]
-
 # ---------- обработчики ----------
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
     user_id = message.from_user.id
     username = message.from_user.username or "пользователь"
-    user = ensure_user(user_id, username)
+    user = get_user(user_id)
+    if not user:
+        create_user(user_id, username)
+        user = get_user(user_id)
+    else:
+        # обновим имя
+        if user["username"] != username:
+            conn = sqlite3.connect("bot.db")
+            c = conn.cursor()
+            c.execute("UPDATE users SET username = ? WHERE user_id = ?", (username, user_id))
+            conn.commit()
+            conn.close()
+    reset_if_needed(user_id)
     user_history[user_id] = []
     await show_menu(message)
 
@@ -137,7 +129,8 @@ async def show_menu(message: types.Message, edit=False):
     user_id = message.from_user.id
     user = get_user(user_id)
     if not user:
-        user = ensure_user(user_id, message.from_user.username)
+        await message.answer("ошибка, начните с /start")
+        return
     balance = user["balance"]
     model = user["model"]
     username = user["username"] or "пользователь"
@@ -161,20 +154,30 @@ async def select_model(callback: types.CallbackQuery):
     if not model_id:
         await callback.answer("неизвестная модель", show_alert=True)
         return
-    ensure_user(user_id, callback.from_user.username)
+    # проверяем, зарегистрирован ли пользователь
+    user = get_user(user_id)
+    if not user:
+        # создаём автоматически при выборе модели
+        create_user(user_id, callback.from_user.username)
+        user = get_user(user_id)
+    reset_if_needed(user_id)
     set_model(user_id, model_id)
-    user_history[user_id] = []   # сбрасываем историю
-    # отправляем уведомление о смене модели
+    user_history[user_id] = []
     await callback.message.answer(f"сменена модель на: {model_name}")
-    # обновляем меню
     await show_menu(callback.message, edit=True)
     await callback.answer()
 
 @dp.message(F.text)
 async def handle_text(message: types.Message):
     user_id = message.from_user.id
-    username = message.from_user.username or "пользователь"
-    user = ensure_user(user_id, username)  # авторегистрация
+    # проверка регистрации
+    user = get_user(user_id)
+    if not user:
+        await message.answer("сначала /start")
+        return
+
+    reset_if_needed(user_id)
+    user = get_user(user_id)  # обновляем данные после сброса
     balance = user["balance"]
     model = user["model"]
 
@@ -182,7 +185,9 @@ async def handle_text(message: types.Message):
         await message.answer(f"недостаточно токенов. нужно: {COST:.2f}, у вас: {balance:.2f}")
         return
 
-    history = get_history(user_id)
+    if user_id not in user_history:
+        user_history[user_id] = []
+    history = user_history[user_id]
     history.append({"role": "user", "content": message.text})
 
     await bot.send_chat_action(message.chat.id, action="typing")
